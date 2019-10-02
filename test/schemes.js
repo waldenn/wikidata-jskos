@@ -1,4 +1,4 @@
-const should = require("chai").should()
+require("chai").should()
 
 const loadMappingSchemes = require("../lib/load-mapping-schemes")
 

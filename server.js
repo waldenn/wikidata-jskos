@@ -7,7 +7,7 @@ const app = express()
 app.set("json spaces", 2)
 const { WikidataJSKOSService } = require("./lib/wikidata-wrapper")
 const loadMappingSchemes = require("./lib/load-mapping-schemes")
-const { addContext } = require("jskos-tools")
+const { addContext, addMappingIdentifiers } = require("jskos-tools")
 const path = require("path")
 
 if (config.auth.key && config.oauth.consumer_key && config.oauth.consumer_secret) {
@@ -131,6 +131,16 @@ const endpoints = {
   "/mappings/voc": "promiseSchemes",
 }
 
+function rewriteMappingUri(mapping) {
+  const { uri } = mapping
+  if (uri.startsWith("http://www.wikidata.org/entity/statement/")) {
+    mapping.uri = `${config.baseUrl}mappings/${uri.substring(41)}`
+    mapping.identifier = [uri]
+    mapping = addMappingIdentifiers(mapping)
+  }
+  return mapping
+}
+
 // load schemes
 loadMappingSchemes({ language: "en", maxAge: 0 })
   .then(schemes => {
@@ -142,6 +152,7 @@ loadMappingSchemes({ language: "en", maxAge: 0 })
     for (let path in endpoints) {
       app.get(path, (req, res) => {
         service[endpoints[path]](req.query)
+          .then(jskos => path === "/mappings" ? jskos.map(rewriteMappingUri) : jskos)
           .then(addContext)
           .then(jskos => {
             if (_.isArray(jskos)) {
@@ -184,6 +195,7 @@ loadMappingSchemes({ language: "en", maxAge: 0 })
     app.get("/mappings/:_id", (req, res) => {
       service.getMapping(req.params._id)
         .then(addContext)
+        .then(rewriteMappingUri)
         .then(jskos => res.json(jskos))
         .catch(errorHandler(res))
     })
@@ -197,6 +209,7 @@ loadMappingSchemes({ language: "en", maxAge: 0 })
           body: req.body,
         })
           .then(addContext)
+          .then(rewriteMappingUri)
           .then(jskos => res.status(201).json(jskos))
           .catch(errorHandler(res))
       })
@@ -209,6 +222,7 @@ loadMappingSchemes({ language: "en", maxAge: 0 })
           body: req.body,
         })
           .then(addContext)
+          .then(rewriteMappingUri)
           .then(jskos => res.json(jskos))
           .catch(errorHandler(res))
       })

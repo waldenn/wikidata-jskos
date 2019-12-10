@@ -5,7 +5,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const app = express()
 app.set("json spaces", 2)
-const { WikidataJSKOSService } = require("./lib/wikidata-wrapper")
+const { WikidataService } = require("./lib/wikidata-wrapper")
 const loadMappingSchemes = require("./lib/load-mapping-schemes")
 const { addContext, addMappingIdentifiers } = require("jskos-tools")
 const path = require("path")
@@ -123,14 +123,6 @@ const addPaginationHeaders = (req, res, data) => {
   res.set("Link", links.join(","))
 }
 
-const endpoints = {
-  "/suggest": "suggestSearch",
-  "/concept": "getConcepts",
-  "/data": "getConcepts",
-  "/mappings": "getMappings",
-  "/mappings/voc": "promiseSchemes",
-}
-
 function rewriteMappingUri(mapping) {
   const { uri } = mapping
   if (uri.startsWith("http://www.wikidata.org/entity/statement/")) {
@@ -141,11 +133,19 @@ function rewriteMappingUri(mapping) {
   return mapping
 }
 
+const endpoints = {
+  "/suggest": "suggestSearch",
+  "/concept": "getConcepts",
+  "/data": "getConcepts",
+  "/mappings": "getMappings",
+  "/mappings/voc": "promiseSchemes",
+}
+
 // load schemes
 loadMappingSchemes({ language: "en", maxAge: 0 })
   .then(schemes => {
     // initialize service
-    const service = new WikidataJSKOSService(schemes)
+    const service = new WikidataService(schemes)
     config.log(`loaded ${schemes.length} mapping schemes`)
 
     // enable endpoints

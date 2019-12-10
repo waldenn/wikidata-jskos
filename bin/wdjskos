@@ -9,6 +9,7 @@ const { WikidataService } = require("../lib/wikidata-wrapper")
 const ndjson = require("../lib/ndjson")
 const suggest = require("../lib/suggest")
 const loadMappingSchemes = require("../lib/load-mapping-schemes")
+const getConcepts = require("../lib/queries/get-concepts")
 
 program
   .version(version)
@@ -44,7 +45,7 @@ function conceptCommand (ids) {
   const language = program.lang || "en"
   getMappingSchemes()
     .then(schemes => new WikidataService(schemes))
-    .then(service => service.getConcepts({ uri: ids.join("|"), language }))
+    .then(service => getConcepts({ uri: ids.join("|"), language }))
     .then(ndjson.write)
 }
 

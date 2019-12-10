@@ -7,7 +7,7 @@ const { red } = require("chalk")
 const wdk = require("../lib/utils/wdk")
 const { WikidataService } = require("../lib/wikidata-wrapper")
 const ndjson = require("../lib/ndjson")
-const suggestSearch = require("../lib/suggest")
+const suggest = require("../lib/suggest")
 const loadMappingSchemes = require("../lib/load-mapping-schemes")
 
 program
@@ -34,7 +34,7 @@ const getMappingSchemes = () => {
 }
 
 function searchCommand (query) {
-  return suggestSearch({search: query.join(" ")})
+  return suggest({search: query.join(" ")})
     .then(suggest => {
       console.log(suggest)
     })

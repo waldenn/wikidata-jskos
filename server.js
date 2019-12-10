@@ -134,7 +134,7 @@ function rewriteMappingUri(mapping) {
 }
 
 const endpoints = {
-  "/suggest": "suggestSearch",
+  "/suggest": "suggest",
   "/concept": "getConcepts",
   "/data": "getConcepts",
   "/mappings": "getMappings",
